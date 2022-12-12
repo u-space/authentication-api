@@ -1,0 +1,7 @@
+logs
+coverage
+node_modules
+certificates
+.env
+private.key
+public.key

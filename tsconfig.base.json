@@ -1,0 +1,64 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "jsx": "react",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "esnext",
+    "noPropertyAccessFromIndexSignature": false,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "lib": [
+      "es2017",
+      "dom"
+    ],
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "skipDefaultLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@dronfies/api-interfaces": [
+        "libs/api-interfaces/src/index.ts"
+      ],
+      "@dronfies/busan-map/*": [
+        "libs/busan-map/src/*"
+      ],
+      "@dronfies/microutm": [
+        "apps/microutm"
+      ],
+      "@dronfies/microutm-entities/*": [
+        "libs/microutm-entities/src/*"
+      ],
+      "@dronfies/pcomponents/*": [
+        "libs/pcomponents/src/*"
+      ],
+      "@dronfies/openCIELUM/tokyo/*": [
+        "libs/openCIELUM/tokyo/src/*"
+      ],
+      "@dronfies/yokohama/*": [
+        "libs/yokohama/src/*"
+      ],
+      "@dronfies/ysvelte/*": [
+        "libs/ysvelte/src/*"
+      ],
+      "@root": [
+        "."
+      ],
+      "stream": [
+        "node_modules/stream-browserify"
+      ],
+      "timers": [
+        "node_modules/timers-browserify"
+      ]
+    }
+  },
+  "exclude": [
+    "node_modules",
+    "tmp"
+  ]
+}

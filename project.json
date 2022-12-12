@@ -1,0 +1,80 @@
+{
+	"root": "apps/auth",
+	"sourceRoot": "apps/auth/src",
+	"projectType": "application",
+	"targets": {
+		"build": {
+			"executor": "@nrwl/node:webpack",
+			"outputs": ["{options.outputPath}"],
+			"options": {
+				"outputPath": "dist/apps/auth",
+				"main": "apps/auth/src/main.ts",
+				"tsConfig": "apps/auth/tsconfig.json",
+				"generatePackageJson": true
+			},
+			"configurations": {
+				"production": {
+					"optimization": true,
+					"extractLicenses": true,
+					"inspect": false,
+					"fileReplacements": [
+						{
+							"replace": "apps/auth/src/environments/environment.ts",
+							"with": "apps/auth/src/environments/environment.prod.ts"
+						}
+					]
+				}
+			}
+		},
+		"serve": {
+			"executor": "@nrwl/node:node",
+			"options": {
+				"buildTarget": "auth:build"
+			}
+		},
+		"prisma-migrate": {
+			"executor": "@nrwl/workspace:run-commands",
+			"outputs": [],
+			"options": {
+				"command": "npx prisma migrate dev --schema ./apps/auth/src/prisma/schema.prisma"
+			}
+		},
+		"prisma-deploy": {
+			"executor": "@nrwl/workspace:run-commands",
+			"outputs": [],
+			"options": {
+				"command": "npx prisma migrate deploy --schema ./apps/auth/src/prisma/schema.prisma"
+			}
+		},
+		"prod-deploy": {
+			"executor": "@nrwl/workspace:run-commands",
+			"outputs": [],
+			"options": {
+				"command": "nx run auth:build && pm2 start apps/auth/ecosystem.config.js --only microutm-auth-prod"
+			}
+		},
+		"gen-client": {
+			"executor": "@nrwl/workspace:run-commands",
+			"outputs": [],
+			"options": {
+				"command": "npx prisma generate --schema ./apps/auth/src/prisma/schema.prisma"
+			}
+		},
+		"lint": {
+			"executor": "@nrwl/linter:eslint",
+			"outputs": ["{options.outputFile}"],
+			"options": {
+				"lintFilePatterns": ["apps/auth/**/*.ts"]
+			}
+		},
+		"test": {
+			"executor": "@nrwl/jest:jest",
+			"outputs": ["coverage/apps/auth"],
+			"options": {
+				"jestConfig": "apps/auth/jest.config.ts",
+				"passWithNoTests": true
+			}
+		}
+	},
+	"tags": []
+}
