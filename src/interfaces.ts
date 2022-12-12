@@ -9,7 +9,6 @@ export interface DataStoredInToken {
   id: number;
   username: string;
   email: string;
-  role: string;
   expirationDate: Date;
 }
 

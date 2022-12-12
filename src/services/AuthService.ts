@@ -48,6 +48,23 @@ class AuthService {
     }
   }
 
+  private convertExtraDataFromObjectToMap(
+    extraData: object
+  ): Map<string, string> {
+    const result = new Map<string, string>();
+    const keys = Object.keys(extraData);
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      if (typeof extraData[key] !== "string") {
+        throw new InvalidDataError(
+          `in extraData, '${key}' value should be a string`
+        );
+      }
+      result.set(key, extraData[key]);
+    }
+    return result;
+  }
+
   private async verifyUserDoesNotExist(username: string, email: string) {
     // verify there is no user with the email received
     try {
@@ -98,11 +115,15 @@ class AuthService {
     email: string;
     firstName: string;
     lastName: string;
-    role: string;
+    extraData: object;
   }): Promise<{ user: User; accessToken: string }> {
-    const { username, email, role } = userData;
-    delete userData.role;
+    const { username, email, extraData } = userData;
+    delete userData.extraData;
     await this.verifyUserDoesNotExist(username, email);
+    let mapExtraData: Map<string, string>;
+    if (extraData !== undefined) {
+      mapExtraData = this.convertExtraDataFromObjectToMap(extraData);
+    }
 
     const user = await this.userDao.addUser(
       new User(
@@ -114,7 +135,7 @@ class AuthService {
         userData.lastName
       )
     );
-    const accessToken = this.createToken(user, role);
+    const accessToken = this.createToken(user, mapExtraData);
     return { accessToken, user };
   }
 
@@ -178,7 +199,7 @@ class AuthService {
   public async login(userData: {
     username: string;
     password: string;
-    role: string;
+    extraData: object;
   }): Promise<{ accessToken: string; refreshToken: string; user: User }> {
     let foundUser: User;
     try {
@@ -210,7 +231,11 @@ class AuthService {
 
     await this.cleanOldUserSessions(foundUser);
 
-    const accessToken = this.createToken(foundUser, userData.role);
+    let mapExtraData: Map<string, string>;
+    if (userData.extraData !== undefined) {
+      mapExtraData = this.convertExtraDataFromObjectToMap(userData.extraData);
+    }
+    const accessToken = this.createToken(foundUser, mapExtraData);
     const refreshToken = await this.createRefreshToken(foundUser);
 
     return { accessToken, refreshToken, user: cleanUser(foundUser) };
@@ -221,7 +246,7 @@ class AuthService {
     userSession: {
       username: string;
       refresh_token: string;
-      role: string;
+      extraData: object;
     }
   ): Promise<{ accessToken: string; user: User }> {
     const tokenVerification = AuthUtil.verifyToken(
@@ -249,17 +274,28 @@ class AuthService {
       throw new HttpError(401, "The session has been finished");
     await this.cleanOldUserSessions(foundUser);
 
-    const accessToken = this.createToken(foundUser, userSession.role);
+    let mapExtraData: Map<string, string>;
+    if (userSession.extraData !== undefined) {
+      mapExtraData = this.convertExtraDataFromObjectToMap(
+        userSession.extraData
+      );
+    }
+
+    const accessToken = this.createToken(foundUser, mapExtraData);
     return { accessToken: accessToken, user: cleanUser(foundUser) };
   }
 
-  public createToken(user: User, role: string): string {
+  public createToken(user: User, extraData?: Map<string, string>): string {
     const dataStoredInToken = {
       id: user.id,
       username: user.username,
       email: user.email,
-      role,
     };
+    if (extraData) {
+      for (let key of extraData.keys()) {
+        dataStoredInToken[key] = extraData.get(key);
+      }
+    }
     const privateKey = fs.readFileSync("./private.key", "utf8");
     const expiresInSeconds: number = 60 * 60;
 

@@ -16,7 +16,7 @@ describe("utils/AuthUtil", () => {
     "eyJhbGciOiJSUzI1NiJ9.c29tZV9zdHJpbmc.Jq3aoK3Nv5bijP6sBbl-gNv7IUY-jJIIBVBnRTAoBg_tym3R4TugHCiTmyXB0rDwNBDXiwAOOQy1cOnbcXAm7rp9MTTkVHl5fL8sBayJc3vmJfEb6m_mqJxGQ5fORcEPS9IXkjrZVPJ9ZtD90a-H04npYmCxd5VOIzCIljc1h8I";
 
   test("complete tests", () => {
-    const dataStoredInToken = { username: "johndoe", role: "admin" };
+    const dataStoredInToken = { username: "johndoe" };
     const expiresInSeconds = 300;
     // test create token with invalid private key
     expect(() => {
@@ -62,9 +62,6 @@ describe("utils/AuthUtil", () => {
     expect(dataStoredInTokenReceivedAfterVerify.username).toBe(
       dataStoredInToken.username
     );
-    expect(dataStoredInTokenReceivedAfterVerify.role).toBe(
-      dataStoredInToken.role
-    );
 
     // decode invalid token
     expect(() => {
@@ -79,7 +76,6 @@ describe("utils/AuthUtil", () => {
     // decode valid token
     const decodedToken = AuthUtil.decodeToken(token);
     expect(decodedToken.username).toBe(dataStoredInToken.username);
-    expect(decodedToken.role).toBe(dataStoredInToken.role);
   });
 });
 

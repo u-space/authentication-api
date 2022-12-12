@@ -15,7 +15,7 @@ import User from "../../src/models/User";
 
 const passwordType = Joi.string().min(8).max(64).required();
 
-function isUserDataValid(data, optionalPassword = false, useRole = false) {
+function isUserDataValid(data, optionalPassword = false) {
   const schema = Joi.object({
     username: Joi.string().min(3).max(30).required(),
     password: !optionalPassword ? passwordType : Joi.string().optional(),
@@ -23,7 +23,7 @@ function isUserDataValid(data, optionalPassword = false, useRole = false) {
     verified: Joi.boolean(),
     firstName: Joi.string().required(),
     lastName: Joi.string().required(),
-    role: useRole ? Joi.string().required() : Joi.string().optional(),
+    extraData: Joi.object().pattern(Joi.string(), Joi.string()).optional(),
   });
 
   if (schema.validate(data).error) {
@@ -35,7 +35,7 @@ function isUserLoginDataValid(data) {
   const schema = Joi.object({
     username: Joi.string().required(),
     password: Joi.string().required(),
-    role: Joi.string(),
+    extraData: Joi.object().pattern(Joi.string(), Joi.string()).optional(),
   });
 
   if (schema.validate(data).error) {
@@ -79,7 +79,7 @@ class AuthController {
   ): Promise<void> => {
     try {
       const userData = req.body;
-      isUserDataValid(userData, true, true);
+      isUserDataValid(userData, true);
       console.log("POST_signup_magic", JSON.stringify(userData));
 
       res.status(201).json({
