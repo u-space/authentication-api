@@ -1,3 +1,5 @@
+![Authentication API](header.png)
+
 # Authentication API
 
 This is a REST API that can be use in any can of projects that requires authentication services. It is developed with node, express and typescript.
