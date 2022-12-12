@@ -14,6 +14,7 @@ import Session from "../../src/models/Session";
 import NoDataError from "./errors/NoDataError";
 import NoDataDBError from "../../src/daos/errors/NoDataDBError";
 import InvalidDataError from "./errors/InvalidDataError";
+import AlreadyDataError from "./errors/AlreadyDataError";
 
 function cleanUser(user: User) {
   const result = user.clone();
@@ -48,15 +49,23 @@ class AuthService {
   }
 
   private async verifyUserDoesNotExist(username: string, email: string) {
-    let foundUser = await this.userDao.getUserByEmail(email);
-    if (foundUser)
-      throw new HttpError(409, `The email ${email} is already registered`);
-    foundUser = await this.userDao.getUserByUsername(username);
-    if (foundUser)
-      throw new HttpError(
-        409,
+    // verify there is no user with the email received
+    try {
+      await this.userDao.getUserByEmail(email);
+      throw new AlreadyDataError(`The email ${email} is already registered`);
+    } catch (error) {
+      if (!(error instanceof NoDataDBError)) throw error;
+    }
+
+    // verify there is no user with the username received
+    try {
+      await this.userDao.getUserByUsername(username);
+      throw new AlreadyDataError(
         `The username ${username} is already registered`
       );
+    } catch (error) {
+      if (!(error instanceof NoDataDBError)) throw error;
+    }
   }
 
   public async signup(userData: {
