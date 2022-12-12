@@ -14,6 +14,8 @@ Install the dependencies:
 
     npm install
 
+Create private.key and public.key files, and add both to the root directory of the project.
+
 Create .env file using .env.sample, and complete it with valid data.
 
 ## Contribution
