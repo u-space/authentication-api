@@ -5,6 +5,7 @@
 import { Router } from "express";
 import AuthController from "./controllers/AuthController";
 import IndexController from "./controllers/IndexController";
+import TestController from "./controllers/TestController";
 import UserController from "./controllers/UserController";
 
 const router = Router();
@@ -50,5 +51,17 @@ router.post(
   "/users/users_by_username",
   userController.POST_users_by_usernames.bind(userController)
 );
+
+/* -------------------------------------------------------
+ * ------------------------ test  ------------------------
+ * -------------------------------------------------------
+ */
+if (process.env.NODE_ENV === "test") {
+  const testController = new TestController();
+  router.post(
+    "/test/init_db",
+    testController.POST_init_db.bind(testController)
+  );
+}
 
 export { router };

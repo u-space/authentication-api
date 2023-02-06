@@ -3,7 +3,6 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import { compare, hash } from "bcrypt";
-import { sign } from "jsonwebtoken";
 import { HttpError } from "../errors/HttpError";
 import fs from "fs";
 import AuthUtil from "../utils/AuthUtil";
@@ -85,38 +84,18 @@ class AuthService {
     }
   }
 
-  public async signup(userData: {
-    username: string;
-    password: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    verified?: boolean;
-  }): Promise<User> {
-    const { username, email, password, verified } = userData;
-    await this.verifyUserDoesNotExist(username, email);
-    const hashedPassword = await hash(password, 10);
-    return await this.userDao.addUser(
-      new User(
-        userData.username,
-        userData.email,
-        verified ?? false,
-        false,
-        userData.firstName,
-        userData.lastName,
-        undefined,
-        hashedPassword
-      )
-    );
-  }
-
-  public async signupMagic(userData: {
-    username: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    extraData: object;
-  }): Promise<{ user: User; accessToken: string }> {
+  public async signupMagic(
+    userData: {
+      username: string;
+      email: string;
+      firstName: string;
+      lastName: string;
+      password?: string;
+      verified?: boolean;
+      extraData?: object;
+    },
+    returnAccessToken: boolean
+  ): Promise<{ user: User; accessToken?: string } | User> {
     const { username, email, extraData } = userData;
     delete userData.extraData;
     await this.verifyUserDoesNotExist(username, email);
@@ -129,14 +108,24 @@ class AuthService {
       new User(
         userData.username,
         userData.email,
-        true,
+        userData.verified !== undefined ? userData.verified : true,
         false,
         userData.firstName,
-        userData.lastName
+        userData.lastName,
+        undefined,
+        userData.password !== undefined
+          ? await hash(userData.password, 10)
+          : undefined
       )
     );
-    const accessToken = this.createToken(user, mapExtraData);
-    return { accessToken, user };
+    if (returnAccessToken) {
+      return {
+        accessToken: this.createToken(user, mapExtraData),
+        user,
+      };
+    } else {
+      return user;
+    }
   }
 
   public async updatePassword(
@@ -186,7 +175,7 @@ class AuthService {
       new User(
         username,
         newData.email,
-        true,
+        newData.verified,
         user.verified,
         newData.firstName,
         newData.lastName,
@@ -249,27 +238,39 @@ class AuthService {
       extraData: object;
     }
   ): Promise<{ accessToken: string; user: User }> {
-    const tokenVerification = AuthUtil.verifyToken(
-      userSession.refresh_token,
-      publicKey
-    );
+    let tokenVerification;
+    try {
+      tokenVerification = AuthUtil.verifyToken(
+        userSession.refresh_token,
+        publicKey
+      );
+    } catch (error) {
+      throw new HttpError(400, "Invalid token");
+    }
     if (tokenVerification.username !== userSession.username)
       throw new HttpError(409, "Username does not match refresh token");
 
-    const foundUser = await this.userDao.getUserByUsername(
-      userSession.username
-    );
+    let foundUser;
+    try {
+      foundUser = await this.userDao.getUserByUsername(userSession.username);
+    } catch (error) {
+      if (error instanceof NoDataDBError) {
+        throw new HttpError(409, "Username or refresh token is incorrect");
+      } else {
+        throw new HttpError(500, "");
+      }
+    }
+
+    if (foundUser.disabled) throw new HttpError(409, "User is disabled");
+    if (!foundUser.verified)
+      throw new HttpError(401, "The user is not verified");
+
     let sessions = await this.sessionDao.getSessionsByUserId(foundUser.id);
     sessions = sessions.filter(
       (session) => session.refreshToken === userSession.refresh_token
     );
     foundUser.sessions = sessions;
 
-    if (!foundUser)
-      throw new HttpError(409, "Username or refresh token is incorrect");
-    if (foundUser.disabled) throw new HttpError(409, "User is disabled");
-    if (!foundUser.verified)
-      throw new HttpError(401, "The user is not verified");
     if (foundUser.sessions.length === 0)
       throw new HttpError(401, "The session has been finished");
     await this.cleanOldUserSessions(foundUser);
@@ -313,11 +314,13 @@ class AuthService {
       email: user.email,
     };
     const privateKey = fs.readFileSync("./private.key", "utf8");
-    const expiresIn = "1 week";
-    const refreshToken = sign(dataStoredInToken, privateKey, {
-      expiresIn,
-      algorithm: "RS256",
-    });
+    const expiresInSeconds = 7 * 24 * 60 * 60; // 1 week
+    const refreshToken = AuthUtil.createToken(
+      dataStoredInToken,
+      expiresInSeconds,
+      privateKey
+    );
+
     await this.sessionDao.addSession(new Session(-1, user.id, refreshToken));
     return refreshToken;
   }

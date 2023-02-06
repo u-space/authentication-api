@@ -7,5 +7,5 @@ import Session from "src/models/Session";
 export default interface ISessionDao {
   addSession(session: Session): Promise<Session>;
   deleteSession(sessionId: number): Promise<void>;
-  getSessionsByUserId(userId: string): Promise<Session[]>;
+  getSessionsByUserId(userId: number): Promise<Session[]>;
 }

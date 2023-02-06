@@ -4,10 +4,10 @@
 
 export default class Session {
   id: number;
-  userId: string;
+  userId: number;
   refreshToken: string;
 
-  constructor(id: number, userId: string, refreshToken: string) {
+  constructor(id: number, userId: number, refreshToken: string) {
     this.id = id;
     this.userId = userId;
     this.refreshToken = refreshToken;

@@ -12,6 +12,7 @@ import NoDataError from "../../src/services/errors/NoDataError";
 import InvalidDataError from "../../src/services/errors/InvalidDataError";
 import { error } from "winston";
 import User from "../../src/models/User";
+import AlreadyDataError from "src/services/errors/AlreadyDataError";
 
 const passwordType = Joi.string().min(8).max(64).required();
 
@@ -47,7 +48,7 @@ class AuthController {
   private authService: AuthService;
 
   constructor(authService?: AuthService) {
-    const daoFactory = new DaoFactory(DaoImplementation.IN_MEMORY);
+    const daoFactory = new DaoFactory(DaoImplementation.PRISMA);
     this.authService = authService
       ? authService
       : new AuthService(daoFactory.getUserDao(), daoFactory.getSessionDao());
@@ -58,17 +59,24 @@ class AuthController {
     res: Response,
     next: NextFunction
   ): Promise<void> => {
+    const userData = req.body;
     try {
-      const userData = req.body;
       isUserDataValid(userData);
-      const signUpUserData = await this.authService.signup(userData);
+    } catch (error) {
+      respondHTTPError(res, 400, (error as Error).message);
+      return;
+    }
+    try {
+      const signUpUserData = await this.authService.signupMagic(
+        userData,
+        false
+      );
       res.status(201).json({ data: signUpUserData, message: "signup" });
     } catch (error) {
-      const error2 = new HttpError(400, "hola");
-      console.log("error2");
-      console.log(error2);
-      next(error2);
-      //next(error);
+      if (error instanceof AlreadyDataError) {
+        return respondHTTPError(res, 400, (error as Error).message);
+      }
+      next(error);
     }
   };
 
@@ -80,10 +88,9 @@ class AuthController {
     try {
       const userData = req.body;
       isUserDataValid(userData, true);
-      console.log("POST_signup_magic", JSON.stringify(userData));
 
       res.status(201).json({
-        data: await this.authService.signupMagic(userData),
+        data: await this.authService.signupMagic(userData, true),
         message: "signup_magic",
       });
     } catch (error) {
@@ -135,6 +142,18 @@ class AuthController {
   ): Promise<void> => {
     try {
       const publicKey = fs.readFileSync("./public.key", "utf8");
+
+      // validate received request body
+      const schema = Joi.object({
+        username: Joi.string().min(3).max(30).required(),
+        refresh_token: Joi.string().required(),
+        extraData: Joi.object().pattern(Joi.string(), Joi.string()).optional(),
+      });
+      const validationResult = schema.validate(req.body);
+      if (validationResult.error) {
+        return respondHTTPError(res, 400, validationResult.error.message);
+      }
+
       const session = req.body;
       res.status(200).json({
         data: await this.authService.loginByRefreshToken(publicKey, session),
@@ -218,7 +237,7 @@ const respondHTTPError = (
   errorMessage?: string
 ) => {
   if (errorMessage) {
-    res.status(statusCode).json({ message: error });
+    res.status(statusCode).json({ message: errorMessage });
   } else {
     res.status(statusCode);
   }

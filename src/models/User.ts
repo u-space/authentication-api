@@ -11,7 +11,7 @@ export default class User {
   disabled: boolean;
   firstName: string;
   lastName: string;
-  id?: string;
+  id?: number;
   password?: string;
   sessions?: Session[];
 
@@ -22,7 +22,7 @@ export default class User {
     disabled: boolean,
     firstName: string,
     lastName: string,
-    id?: string,
+    id?: number,
     password?: string,
     sessions?: Session[]
   ) {

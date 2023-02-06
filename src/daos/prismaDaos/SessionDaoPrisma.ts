@@ -2,17 +2,38 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+import { PrismaClient } from ".prisma/client";
 import Session from "src/models/Session";
 import ISessionDao from "../ISessionDao";
 
 export default class SessionDaoPrisma implements ISessionDao {
+  prisma = new PrismaClient();
+
   async addSession(session: Session): Promise<Session> {
-    throw new Error("Method not implemented.");
+    const data = {
+      userId: session.userId,
+      refresh_token: session.refreshToken,
+    };
+    if (session.id > 0) {
+      data["id"] = session.id;
+    }
+    const dbSession = await this.prisma.session.create({
+      data,
+    });
+    return new Session(dbSession.id, dbSession.userId, dbSession.refresh_token);
   }
   async deleteSession(sessionId: number): Promise<void> {
-    throw new Error("Method not implemented.");
+    await this.prisma.session.delete({ where: { id: sessionId } });
   }
-  async getSessionsByUserId(userId: string): Promise<Session[]> {
-    throw new Error("Method not implemented.");
+  async getSessionsByUserId(userId: number): Promise<Session[]> {
+    const dbSessions = await this.prisma.session.findMany({
+      where: {
+        userId: userId,
+      },
+    });
+    return dbSessions.map(
+      (dbSession) =>
+        new Session(dbSession.id, dbSession.userId, dbSession.refresh_token)
+    );
   }
 }
