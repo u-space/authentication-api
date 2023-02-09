@@ -28,6 +28,8 @@ router.post(
 );
 router.post("/auth/password", authController.PUT_password.bind(authController));
 router.post("/auth/update", authController.PUT_update.bind(authController));
+router.put("/auth/password", authController.PUT_password.bind(authController));
+router.put("/auth/update", authController.PUT_update.bind(authController));
 
 /* -------------------------------------------------------
  * ------------------------ index ------------------------
