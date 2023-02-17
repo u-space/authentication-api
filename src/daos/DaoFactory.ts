@@ -17,7 +17,7 @@ export default class DaoFactory {
     this.daoImplementation = daoImplementation;
   }
 
-  clearDatabase(): Promise<void> {
+  async clearDatabase(): Promise<void> {
     if (this.daoImplementation === DaoImplementation.PRISMA) {
       throw new Error("Not implemented.");
     } else if (this.daoImplementation === DaoImplementation.IN_MEMORY) {

@@ -3,7 +3,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import { NextFunction, Request, Response } from "express";
-import DaoFactory, { DaoImplementation } from "../../src/daos/DaoFactory";
+import DaoFactory, { DaoImplementation } from "../daos/DaoFactory";
 import { HttpError } from "../errors/HttpError";
 import UserService, {
   FindUsersByUsernamesReturnType,

@@ -3,7 +3,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 export default class CorruptedDBError extends Error {
-  previousError: Error;
+  previousError?: Error;
   constructor(msg: string, error?: Error) {
     super(msg);
     this.previousError = error;

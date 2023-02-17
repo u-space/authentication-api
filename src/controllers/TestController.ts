@@ -1,13 +1,13 @@
 import { PrismaClient } from ".prisma/client";
 import { NextFunction, Request, Response } from "express";
-import IUserDao from "src/daos/IUserDao";
-import UserDaoPrisma from "src/daos/prismaDaos/UserDaoPrisma";
-import User from "src/models/User";
+import IUserDao from "../daos/IUserDao";
+import UserDaoPrisma from "../daos/prismaDaos/UserDaoPrisma";
+import User from "../models/User";
 import fs from "fs";
 import AuthUtil from "../utils/AuthUtil";
-import ISessionDao from "src/daos/ISessionDao";
-import SessionDaoPrisma from "src/daos/prismaDaos/SessionDaoPrisma";
-import Session from "src/models/Session";
+import ISessionDao from "../daos/ISessionDao";
+import SessionDaoPrisma from "../daos/prismaDaos/SessionDaoPrisma";
+import Session from "../models/Session";
 import { hash } from "bcrypt";
 
 export default class TestController {
@@ -96,7 +96,7 @@ export default class TestController {
       privateKey
     );
     await this.sessionDao.addSession(
-      new Session(1, userCathy.id, refreshToken)
+      new Session(1, userCathy.id!, refreshToken)
     );
 
     // respond

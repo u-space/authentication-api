@@ -2,12 +2,12 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import Session from "src/models/Session";
-import { v4 as uuidv4 } from "uuid";
-import User from "../../../src/models/User";
+import Session from "../../models/Session";
+import User from "../../models/User";
 
 export default class InMemoryDB {
   static nextSessionId = 1;
+  static nextUserId = 1;
   static users: User[] = [];
   static sessions: Session[] = [];
 
@@ -17,7 +17,7 @@ export default class InMemoryDB {
 
   static addUser = (user: User): User => {
     const userToAdd = user.clone();
-    userToAdd.id = uuidv4();
+    userToAdd.id = this.nextUserId++;
     this.users.push(userToAdd);
     return userToAdd.clone();
   };
@@ -40,7 +40,7 @@ export default class InMemoryDB {
       false,
       "firstName",
       "lastName",
-      "id",
+      1,
       "password"
     );
 

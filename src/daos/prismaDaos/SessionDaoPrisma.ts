@@ -3,14 +3,14 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import { PrismaClient } from ".prisma/client";
-import Session from "src/models/Session";
+import Session from "../../models/Session";
 import ISessionDao from "../ISessionDao";
 
 export default class SessionDaoPrisma implements ISessionDao {
   prisma = new PrismaClient();
 
   async addSession(session: Session): Promise<Session> {
-    const data = {
+    const data: any = {
       userId: session.userId,
       refresh_token: session.refreshToken,
     };

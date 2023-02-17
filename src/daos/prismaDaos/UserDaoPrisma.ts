@@ -2,8 +2,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import { Prisma, PrismaClient } from ".prisma/client";
-import User from "src/models/User";
+import { PrismaClient } from ".prisma/client";
+import User from "../../models/User";
 import CorruptedDBError from "../errors/CorruptedDBError";
 import NoDataDBError from "../errors/NoDataDBError";
 import IUserDao from "../IUserDao";
@@ -41,7 +41,7 @@ export default class UserDaoPrisma implements IUserDao {
     return allUsers.filter((user) => usernames.includes(user.username));
   }
   async addUser(user: User): Promise<User> {
-    const data = {
+    const data: any = {
       username: user.username,
       email: user.email,
       password: user.password,

@@ -2,7 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import User from "src/models/User";
+import User from "../../models/User";
 import AlraedyDataDBError from "../errors/AlreadyDataDBError";
 import CorruptedDBError from "../errors/CorruptedDBError";
 import NoDataDBError from "../errors/NoDataDBError";
@@ -81,7 +81,7 @@ export default class UserDaoInMemory implements IUserDao {
       } catch (_ignored) {}
       throw new UnexpectedDBError(
         `UnexpectedDBError updating user password`,
-        error
+        error instanceof Error ? error : undefined
       );
     }
     return Promise.resolve(dbUser);
@@ -97,7 +97,10 @@ export default class UserDaoInMemory implements IUserDao {
         else if ((error as Error).message === "CORRUPTED_DB")
           throw new CorruptedDBError(`Corrupted db`);
       } catch (_ignored) {}
-      throw new UnexpectedDBError(`UnexpectedDBError updating user`, error);
+      throw new UnexpectedDBError(
+        `UnexpectedDBError updating user`,
+        error instanceof Error ? error : undefined
+      );
     }
   }
 }

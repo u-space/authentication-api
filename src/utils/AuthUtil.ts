@@ -2,7 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import { decode, JsonWebTokenError, sign, verify } from "jsonwebtoken";
+import { decode, sign, verify } from "jsonwebtoken";
 import { DataStoredInToken } from "../interfaces";
 
 export default class AuthUtil {
@@ -21,7 +21,12 @@ export default class AuthUtil {
     const data = verify(token, publicKey, {
       algorithms: ["RS256"],
     });
-    if (typeof data !== "string") {
+    if (
+      typeof data !== "string" &&
+      data !== undefined &&
+      data !== null &&
+      data.exp !== undefined
+    ) {
       return {
         ...data,
         expirationDate: new Date("exp" in data ? data.exp * 1000 : 0),
@@ -33,7 +38,12 @@ export default class AuthUtil {
 
   static decodeToken(token: string) {
     const data = decode(token);
-    if (typeof data !== "string") {
+    if (
+      typeof data !== "string" &&
+      data !== undefined &&
+      data !== null &&
+      data.exp !== undefined
+    ) {
       return {
         ...data,
         expirationDate: new Date("exp" in data ? data.exp * 1000 : 0),

@@ -7,16 +7,15 @@ import AuthService from "../services/AuthService";
 import Joi from "joi";
 import { HttpError } from "../errors/HttpError";
 import fs from "fs";
-import DaoFactory, { DaoImplementation } from "../../src/daos/DaoFactory";
-import NoDataError from "../../src/services/errors/NoDataError";
-import InvalidDataError from "../../src/services/errors/InvalidDataError";
-import { error } from "winston";
-import User from "../../src/models/User";
-import AlreadyDataError from "src/services/errors/AlreadyDataError";
+import DaoFactory, { DaoImplementation } from "../daos/DaoFactory";
+import NoDataError from "../services/errors/NoDataError";
+import InvalidDataError from "../services/errors/InvalidDataError";
+import User from "../models/User";
+import AlreadyDataError from "../services/errors/AlreadyDataError";
 
 const passwordType = Joi.string().min(8).max(64).required();
 
-function isUserDataValid(data, optionalPassword = false) {
+function isUserDataValid(data: any, optionalPassword = false) {
   const schema = Joi.object({
     username: Joi.string().min(3).max(30).required(),
     password: !optionalPassword ? passwordType : Joi.string().optional(),
@@ -28,11 +27,13 @@ function isUserDataValid(data, optionalPassword = false) {
   });
 
   if (schema.validate(data).error) {
-    throw new Error(schema.validate(data).error.message);
+    const error = schema.validate(data).error;
+    if (error !== undefined) throw new Error(error.message);
+    throw new Error("Invalid user");
   }
 }
 
-function isUserLoginDataValid(data) {
+function isUserLoginDataValid(data: any) {
   const schema = Joi.object({
     username: Joi.string().required(),
     password: Joi.string().required(),
@@ -40,7 +41,9 @@ function isUserLoginDataValid(data) {
   });
 
   if (schema.validate(data).error) {
-    throw new Error(schema.validate(data).error.message);
+    const error = schema.validate(data).error;
+    if (error !== undefined) throw new Error(error.message);
+    throw new Error("Invalid user login data");
   }
 }
 
@@ -176,8 +179,12 @@ class AuthController {
         password: passwordType,
       });
       if (schema.validate(data).error) {
-        respondHTTPError(res, 400, `${schema.validate(data).error.message}`);
-        return;
+        const error = schema.validate(data).error;
+        return respondHTTPError(
+          res,
+          400,
+          error ? error.message : "Invalid data"
+        );
       }
       let userUpdated: User;
       try {
@@ -218,7 +225,8 @@ class AuthController {
       });
 
       if (schema.validate(data).error) {
-        throw new Error(schema.validate(data).error.message);
+        const error = schema.validate(data).error;
+        throw new Error(error ? error.message : "Invalid data");
       }
 
       res.status(200).json({

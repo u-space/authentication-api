@@ -4,14 +4,14 @@
 
 import { compare, hash } from "bcrypt";
 import { HttpError } from "../errors/HttpError";
-import fs from "fs";
+import * as fs from "fs";
 import AuthUtil from "../utils/AuthUtil";
-import ISessionDao from "src/daos/ISessionDao";
-import IUserDao from "src/daos/IUserDao";
-import User from "../../src/models/User";
-import Session from "../../src/models/Session";
+import ISessionDao from "../daos/ISessionDao";
+import IUserDao from "../daos/IUserDao";
+import User from "../models/User";
+import Session from "../models/Session";
 import NoDataError from "./errors/NoDataError";
-import NoDataDBError from "../../src/daos/errors/NoDataDBError";
+import NoDataDBError from "../daos/errors/NoDataDBError";
 import InvalidDataError from "./errors/InvalidDataError";
 import AlreadyDataError from "./errors/AlreadyDataError";
 
@@ -47,9 +47,7 @@ class AuthService {
     }
   }
 
-  private convertExtraDataFromObjectToMap(
-    extraData: object
-  ): Map<string, string> {
+  private convertExtraDataFromObjectToMap(extraData: any): Map<string, string> {
     const result = new Map<string, string>();
     const keys = Object.keys(extraData);
     for (let i = 0; i < keys.length; i++) {
@@ -99,7 +97,7 @@ class AuthService {
     const { username, email, extraData } = userData;
     delete userData.extraData;
     await this.verifyUserDoesNotExist(username, email);
-    let mapExtraData: Map<string, string>;
+    let mapExtraData = new Map<string, string>();
     if (extraData !== undefined) {
       mapExtraData = this.convertExtraDataFromObjectToMap(extraData);
     }
@@ -147,7 +145,7 @@ class AuthService {
     if (user.disabled) {
       throw new InvalidDataError("the user is disabled");
     }
-    const sessions = await this.sessionDao.getSessionsByUserId(user.id);
+    const sessions = await this.sessionDao.getSessionsByUserId(user.id!);
     user.sessions = sessions;
     await this.cleanOldUserSessions(user, true);
     const hashedPassword = await hash(password, 10);
@@ -156,7 +154,7 @@ class AuthService {
       hashedPassword
     );
     const userSessions = await this.sessionDao.getSessionsByUserId(
-      userFromDB.id
+      userFromDB.id!
     );
     userFromDB.sessions = userSessions;
     return Promise.resolve(userFromDB);
@@ -202,7 +200,7 @@ class AuthService {
       }
       throw error;
     }
-    const sessions = await this.sessionDao.getSessionsByUserId(foundUser.id);
+    const sessions = await this.sessionDao.getSessionsByUserId(foundUser.id!);
     foundUser.sessions = sessions;
     if (!foundUser)
       throw new NoDataError("there is no user with the username received");
@@ -220,7 +218,7 @@ class AuthService {
 
     await this.cleanOldUserSessions(foundUser);
 
-    let mapExtraData: Map<string, string>;
+    let mapExtraData = new Map<string, string>();
     if (userData.extraData !== undefined) {
       mapExtraData = this.convertExtraDataFromObjectToMap(userData.extraData);
     }
@@ -265,7 +263,7 @@ class AuthService {
     if (!foundUser.verified)
       throw new HttpError(401, "The user is not verified");
 
-    let sessions = await this.sessionDao.getSessionsByUserId(foundUser.id);
+    let sessions = await this.sessionDao.getSessionsByUserId(foundUser.id!);
     sessions = sessions.filter(
       (session) => session.refreshToken === userSession.refresh_token
     );
@@ -275,7 +273,7 @@ class AuthService {
       throw new HttpError(401, "The session has been finished");
     await this.cleanOldUserSessions(foundUser);
 
-    let mapExtraData: Map<string, string>;
+    let mapExtraData = new Map<string, string>();
     if (userSession.extraData !== undefined) {
       mapExtraData = this.convertExtraDataFromObjectToMap(
         userSession.extraData
@@ -287,7 +285,7 @@ class AuthService {
   }
 
   public createToken(user: User, extraData?: Map<string, string>): string {
-    const dataStoredInToken = {
+    const dataStoredInToken: any = {
       id: user.id,
       username: user.username,
       email: user.email,
@@ -321,7 +319,7 @@ class AuthService {
       privateKey
     );
 
-    await this.sessionDao.addSession(new Session(-1, user.id, refreshToken));
+    await this.sessionDao.addSession(new Session(-1, user.id!, refreshToken));
     return refreshToken;
   }
 }
