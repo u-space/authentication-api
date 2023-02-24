@@ -174,7 +174,7 @@ class AuthService {
         username,
         newData.email,
         newData.verified,
-        user.verified,
+        user.disabled,
         newData.firstName,
         newData.lastName,
         user.id,
