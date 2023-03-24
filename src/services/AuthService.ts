@@ -207,10 +207,15 @@ class AuthService {
     if (!foundUser.password) throw new InvalidDataError("password is not set"); // Password needs to be reset
     if (foundUser.disabled) throw new InvalidDataError("user is disabled");
 
-    const isPasswordMatching = await compare(
-      userData.password,
-      foundUser.password
-    );
+    // This code is to support all versions of bcrypt
+    // In old version of bcrypt, hashes start with $2y$ (instead of $2b$),
+    // so if we have an old hash, we replace the 'y' with a 'b', and
+    // after that the comparision works.
+    let hashedPassword = /^\$2y\$/.test(foundUser.password)
+      ? "$2b$" + foundUser.password.slice(4)
+      : foundUser.password;
+
+    const isPasswordMatching = await compare(userData.password, hashedPassword);
     if (!isPasswordMatching) throw new NoDataError("password is incorrect");
 
     if (!foundUser.verified)
