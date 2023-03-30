@@ -9,7 +9,6 @@ import App from "./app";
 import { cleanEnv, port, str } from "envalid";
 
 try {
-  console.log("hola");
   cleanEnv(process.env, {
     NODE_ENV: str(),
     PORT: port(),
