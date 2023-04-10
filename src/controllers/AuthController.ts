@@ -17,7 +17,7 @@ const passwordType = Joi.string().min(8).max(64).required();
 
 function isUserDataValid(data: any, optionalPassword = false) {
   const schema = Joi.object({
-    username: Joi.string().min(3).max(30).required(),
+    username: Joi.string().min(3).max(255).required(),
     password: !optionalPassword ? passwordType : Joi.string().optional(),
     email: Joi.string().email().required(),
     verified: Joi.boolean(),
