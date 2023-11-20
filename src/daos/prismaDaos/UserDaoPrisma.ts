@@ -7,9 +7,10 @@ import User from "../../models/User";
 import CorruptedDBError from "../errors/CorruptedDBError";
 import NoDataDBError from "../errors/NoDataDBError";
 import IUserDao from "../IUserDao";
+import { PrismaClientSingleton } from "../PrismaClientSingleton";
 
 export default class UserDaoPrisma implements IUserDao {
-  prisma = new PrismaClient();
+  prisma = PrismaClientSingleton.getInstance().prisma;
 
   async getUserByEmail(email: string): Promise<User> {
     const dbUsers = await this.prisma.user.findMany({ where: { email } });

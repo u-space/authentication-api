@@ -5,9 +5,10 @@
 import { PrismaClient } from ".prisma/client";
 import Session from "../../models/Session";
 import ISessionDao from "../ISessionDao";
+import { PrismaClientSingleton } from "../PrismaClientSingleton";
 
 export default class SessionDaoPrisma implements ISessionDao {
-  prisma = new PrismaClient();
+  prisma = PrismaClientSingleton.getInstance().prisma;
 
   async addSession(session: Session): Promise<Session> {
     const data: any = {
