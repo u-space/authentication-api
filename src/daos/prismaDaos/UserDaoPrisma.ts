@@ -2,12 +2,12 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import { PrismaClient } from ".prisma/client";
-import User from "../../models/User";
-import CorruptedDBError from "../errors/CorruptedDBError";
-import NoDataDBError from "../errors/NoDataDBError";
-import IUserDao from "../IUserDao";
-import { PrismaClientSingleton } from "../PrismaClientSingleton";
+import { PrismaClient } from '.prisma/client';
+import User from '../../models/User';
+import CorruptedDBError from '../errors/CorruptedDBError';
+import NoDataDBError from '../errors/NoDataDBError';
+import IUserDao from '../IUserDao';
+import { PrismaClientSingleton } from '../PrismaClientSingleton';
 
 export default class UserDaoPrisma implements IUserDao {
   prisma = PrismaClientSingleton.getInstance().prisma;
@@ -49,9 +49,9 @@ export default class UserDaoPrisma implements IUserDao {
       firstName: user.firstName,
       lastName: user.lastName,
     };
-    if (user.id) data["id"] = user.id;
-    if (user.verified !== undefined) data["verified"] = user.verified;
-    if (user.disabled !== undefined) data["disabled"] = user.disabled;
+    if (user.id) data['id'] = user.id;
+    if (user.verified !== undefined) data['verified'] = user.verified;
+    if (user.disabled !== undefined) data['disabled'] = user.disabled;
     const dbUser = await this.prisma.user.create({
       data,
     });
@@ -64,10 +64,10 @@ export default class UserDaoPrisma implements IUserDao {
     });
     return this.convertPrismaUserToUser(dbUser);
   }
-  async updateUser(user: User): Promise<User> {
+  async updateUser(username: string, user: User): Promise<User> {
     const dbUser = await this.prisma.user.update({
       data: this.convertUserToPrismaUser(user),
-      where: { username: user.username },
+      where: { username: username },
     });
     return this.convertPrismaUserToUser(dbUser);
   }

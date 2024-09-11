@@ -2,14 +2,14 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import User from "../../models/User";
-import AlraedyDataDBError from "../errors/AlreadyDataDBError";
-import CorruptedDBError from "../errors/CorruptedDBError";
-import NoDataDBError from "../errors/NoDataDBError";
-import UnexpectedDBError from "../errors/UnexpectedDBError";
-import IUserDao from "../IUserDao";
-import ValidatorUtil from "../utils/ValidatorUtil";
-import InMemoryDB from "./InMemoryDB";
+import User from '../../models/User';
+import AlraedyDataDBError from '../errors/AlreadyDataDBError';
+import CorruptedDBError from '../errors/CorruptedDBError';
+import NoDataDBError from '../errors/NoDataDBError';
+import UnexpectedDBError from '../errors/UnexpectedDBError';
+import IUserDao from '../IUserDao';
+import ValidatorUtil from '../utils/ValidatorUtil';
+import InMemoryDB from './InMemoryDB';
 
 export default class UserDaoInMemory implements IUserDao {
   async getUserByEmail(email: string): Promise<User> {
@@ -72,11 +72,11 @@ export default class UserDaoInMemory implements IUserDao {
       dbUser = InMemoryDB.updateUser(user);
     } catch (error) {
       try {
-        if ((error as Error).message === "NO_DATA")
+        if ((error as Error).message === 'NO_DATA')
           throw new NoDataDBError(
             `There is no user with the username '${username}'`
           );
-        else if ((error as Error).message === "CORRUPTED_DB")
+        else if ((error as Error).message === 'CORRUPTED_DB')
           throw new CorruptedDBError(`Corrupted db`);
       } catch (_ignored) {}
       throw new UnexpectedDBError(
@@ -87,14 +87,14 @@ export default class UserDaoInMemory implements IUserDao {
     return Promise.resolve(dbUser);
   }
 
-  async updateUser(user: User): Promise<User> {
+  async updateUser(username: string, user: User): Promise<User> {
     try {
       return Promise.resolve(InMemoryDB.updateUser(user));
     } catch (error) {
       try {
-        if ((error as Error).message === "NO_DATA")
+        if ((error as Error).message === 'NO_DATA')
           throw new NoDataDBError(`There is no user with the id '${user.id}'`);
-        else if ((error as Error).message === "CORRUPTED_DB")
+        else if ((error as Error).message === 'CORRUPTED_DB')
           throw new CorruptedDBError(`Corrupted db`);
       } catch (_ignored) {}
       throw new UnexpectedDBError(
