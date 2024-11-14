@@ -307,7 +307,7 @@ class AuthService {
       }
     }
     const privateKey = fs.readFileSync('./private.key', 'utf8');
-    const expiresInSeconds: number = 60 * 60;
+    const expiresInSeconds: number = 60 * 60 * 24; // 1 hour
 
     return AuthUtil.createToken(
       dataStoredInToken,
