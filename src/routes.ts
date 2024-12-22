@@ -7,8 +7,17 @@ import AuthController from "./controllers/AuthController";
 import IndexController from "./controllers/IndexController";
 import TestController from "./controllers/TestController";
 import UserController from "./controllers/UserController";
+import { VersionController } from "./controllers/VersionController";
 
 const router = Router();
+
+/* -------------------------------------------------------
+ * ----------------------- version -----------------------
+ * -------------------------------------------------------
+ */
+const versionController = new VersionController();
+
+router.get("/version", versionController.version.bind(versionController));
 
 /* -------------------------------------------------------
  * ------------------------ auth  ------------------------
